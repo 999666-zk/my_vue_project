@@ -1,10 +1,9 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <!-- <h1>hello world</h1> -->
+    <transition name="myanimation">
+      <router-view />
+    </transition>
   </div>
 </template>
 
@@ -15,17 +14,18 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-}
 
-#nav {
-  padding: 30px;
+  .myanimation-enter-active {
+    animation: bounce-in .6s;
+  }
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+  @keyframes bounce-in {
+    0% {
+      opacity: 0;
+    }
 
-    &.router-link-exact-active {
-      color: #42b983;
+    100% {
+      opacity: 1;
     }
   }
 }
