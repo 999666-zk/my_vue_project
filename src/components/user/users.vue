@@ -48,9 +48,10 @@
                     </template>
                 </el-table-column>
                 <el-table-column label="操作" width="180">
-                    <template>
-                        <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-                        <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+                    <template v-slot="{ row }">
+                        <el-button type="primary" icon="el-icon-edit" size="mini" @click="editShow(row.id)"></el-button>
+                        <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteUsers(row.id)">
+                        </el-button>
                         <el-tooltip effect="dark" content="分配角色" placement="top">
                             <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
                         </el-tooltip>
@@ -86,6 +87,26 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="dialogVisible = false">取 消</el-button>
                 <el-button type="primary" @click="addUser('addFormRef')">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 修改用户的对话框 -->
+
+        <el-dialog title="修改用户" :visible.sync="editVisible" width="50%" @close="editClose">
+            <el-form :model="editFormList" :rules="editFormrules" ref="editFormRef" label-width="70px">
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="editFormList.username" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="editFormList.email"></el-input>
+                </el-form-item>
+                <el-form-item label="手机" prop="mobile">
+                    <el-input v-model="editFormList.mobile"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="editVisible = false">取 消</el-button>
+                <el-button type="primary" @click="editUser('editFormRef')">确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -127,8 +148,10 @@ export default {
             },
             userlist: [],
             total: 0,
-            // 控制对话框的隐藏
+            // 控制添加对话框的隐藏
             dialogVisible: false,
+            // 控制修改对话框的隐藏
+            editVisible: false,
             // 添加用户的数据
             addForm: {
                 username: '',
@@ -155,9 +178,26 @@ export default {
                     { validator: checkPhone, trigger: 'blur' }
                 ],
             },
+            editFormrules: {
+                username: [
+                    { required: true, message: '请输入用户名', trigger: 'blur' },
+                    { min: 3, max: 12, message: '长度在 3 到 12 个字符', trigger: 'blur' }
+                ],
+                email: [
+                    { required: true, message: '请输入邮箱', trigger: 'blur' },
+                    { validator: checkEmail, trigger: 'blur' }
+                ],
+                mobile: [
+                    { required: true, message: '请输入手机号', trigger: 'blur' },
+                    { validator: checkPhone, trigger: 'blur' }
+                ],
+            },
+            // 获取要修改的数据
+            editFormList: {},
         };
     },
     methods: {
+        // 添加用户提交
         addUser: function (formName) {
             this.$refs[formName].validate(async (valid) => {
                 if (valid) {
@@ -181,12 +221,37 @@ export default {
                         // 重新获取用户列表
                         this.getUserList();
                     }
-
                 }
             })
-
-            // 添加成功后关闭页面
         },
+        // 编辑用户确定提交
+        editUser: function (formName) {
+            this.$refs[formName].validate(async (valid) => {
+                if (valid) {
+                    // 发起请求
+                    const { data } = await this.axios.put(`users/${this.editFormList.id}`, { email: this.editFormList.email, mobile: this.editFormList.mobile });
+                    console.log(data);
+                    if (data.meta.status !== 200) {
+                        return this.$message({
+                            message: data.meta.msg,
+                            type: 'error',
+                            duration: 2000,
+                        })
+                    } else {
+                        this.$message({
+                            message: data.meta.msg,
+                            type: 'success',
+                            duration: 2000,
+                        })
+                        // 隐藏添加对话框
+                        this.editVisible = false;
+                        // 重新获取用户列表
+                        this.getUserList();
+                    }
+                }
+            })
+        },
+        // 获取用户列表
         getUserList: function () {
             this.axios.get('users', { params: this.queryInfo }).then(res => {
                 let { data } = res;
@@ -202,6 +267,7 @@ export default {
                 }
             })
         },
+        // 每页记录条数
         handleSizeChange(val) {
             // console.log(`每页 ${val} 条`);
             this.queryInfo.pagesize = val;
@@ -236,8 +302,61 @@ export default {
                 }
             })
         },
+        // 重置添加对话框
         addDialogClosed() {
             this.$refs.addFormRef.resetFields();
+        },
+        // 重置编辑对话框
+        editClose() {
+            this.$refs.editFormRef.resetFields();
+        },
+        // 编辑展示
+        editShow: async function (id) {
+            this.editVisible = true;
+            const { data } = await this.axios.get(`users/${id}`);
+            // console.log(data);
+            if (data.meta.status !== 200) {
+                return this.$message({
+                    message: data.meta.msg,
+                    type: 'error',
+                    duration: 2000,
+                })
+            } else {
+                this.$message({
+                    message: data.meta.msg,
+                    type: 'success',
+                    duration: 2000,
+                })
+                this.editFormList = data.data;
+            }
+        },
+        deleteUsers: function (id) {
+            this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(async () => {
+                const { data } = await this.axios.delete(`users/${id}`)
+                if (data.meta.status !== 200) {
+                    return this.$message({
+                        message: data.meta.msg,
+                        type: 'error',
+                        duration: 2000,
+                    })
+                } else {
+                    this.$message({
+                        message: data.meta.msg,
+                        type: 'success',
+                        duration: 2000,
+                    });
+                    this.getUserList();
+                }
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });
+            });
         }
     },
     components: {
