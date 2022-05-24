@@ -26,3 +26,6 @@ body,
   text-align: left;
   margin-top: 20px;
 }
+.el-dialog {
+  text-align: left;
+}

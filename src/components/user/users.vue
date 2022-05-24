@@ -13,12 +13,13 @@
             <!-- 搜索和添加区 -->
             <el-row :gutter="30">
                 <el-col :span="6">
-                    <el-input placeholder="请输入内容" class="input-with-select">
-                        <el-button slot="append" icon="el-icon-search"></el-button>
+                    <el-input placeholder="请输入内容" class="input-with-select" v-model="queryInfo.query" clearable
+                        @clear="getUserList">
+                        <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
                     </el-input>
                 </el-col>
                 <el-col :span="1">
-                    <el-button type="primary">添加用户</el-button>
+                    <el-button type="primary" @click="dialogVisible = true">添加用户</el-button>
                 </el-col>
             </el-row>
 
@@ -33,13 +34,16 @@
                 </el-table-column>
                 <el-table-column prop="role_name" label="角色">
                 </el-table-column>
+                <!-- <el-table-column prop="mg_time" label="添加时间">
+                </el-table-column> -->
                 <el-table-column label="状态">
                     <!-- <template slot-scope="scope"> -->
                     <template v-slot="{ row }">
                         <!-- 作用域插槽 -->
                         <!-- {{ scope.row }} -->
                         <!-- {{ row }} -->
-                        <el-switch v-model="row.mg_state" active-color="#13ce66" inactive-color="#ff4949">
+                        <el-switch v-model="row.mg_state" active-color="#13ce66" inactive-color="#ff4949"
+                            @change="userStateChanged(row)">
                         </el-switch>
                     </template>
                 </el-table-column>
@@ -59,6 +63,31 @@
                 layout="total, sizes, prev, pager, next, jumper" :total="total" background>
             </el-pagination>
         </el-card>
+
+
+        <!-- 添加用户的对话框 -->
+        <el-dialog title="添加用户" :visible.sync="dialogVisible" width="50%" @close="addDialogClosed">
+            <!-- 内容主题区域 -->
+            <el-form :model="addForm" :rules="addFormrules" ref="addFormRef" label-width="70px">
+                <el-form-item label="用户名" prop="username">
+                    <el-input v-model="addForm.username"></el-input>
+                </el-form-item>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="addForm.password" type="password"></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="addForm.email"></el-input>
+                </el-form-item>
+                <el-form-item label="手机" prop="mobile">
+                    <el-input v-model="addForm.mobile"></el-input>
+                </el-form-item>
+            </el-form>
+            <!-- 底部区域 -->
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="addUser('addFormRef')">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -68,9 +97,28 @@ export default {
 
     },
     data() {
+        // 自定义验证规则
+        var checkEmail = (rule, value, callback) => {
+            const regEmail = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+            if (!regEmail.test(value)) {
+                callback(new Error('邮箱非法'));
+            } else {
+                callback();
+            }
+        };
+
+        var checkPhone = (rule, value, callback) => {
+            const regPhone = /^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/;
+            if (!regPhone.test(value)) {
+                callback(new Error('手机号非法'));
+            } else {
+                callback();
+            }
+        };
         return {
             // 获取用户列表的参数对象
             queryInfo: {
+                // 搜索项
                 query: '',
                 // 当前页数
                 pagenum: 1,
@@ -79,14 +127,71 @@ export default {
             },
             userlist: [],
             total: 0,
+            // 控制对话框的隐藏
+            dialogVisible: false,
+            // 添加用户的数据
+            addForm: {
+                username: '',
+                password: '',
+                email: '',
+                mobile: '',
+            },
+            // 表单验证规则
+            addFormrules: {
+                username: [
+                    { required: true, message: '请输入用户名', trigger: 'blur' },
+                    { min: 3, max: 12, message: '长度在 3 到 12 个字符', trigger: 'blur' }
+                ],
+                password: [
+                    { required: true, message: '请输入密码', trigger: 'blur' },
+                    { min: 6, max: 8, message: '长度在 6 到 8 个字符', trigger: 'blur' }
+                ],
+                email: [
+                    { required: true, message: '请输入邮箱', trigger: 'blur' },
+                    { validator: checkEmail, trigger: 'blur' }
+                ],
+                mobile: [
+                    { required: true, message: '请输入手机号', trigger: 'blur' },
+                    { validator: checkPhone, trigger: 'blur' }
+                ],
+            },
         };
     },
     methods: {
+        addUser: function (formName) {
+            this.$refs[formName].validate(async (valid) => {
+                if (valid) {
+                    // 发起请求
+                    const { data } = await this.axios.post('users', this.addForm);
+                    console.log(data);
+                    if (data.meta.status !== 201) {
+                        return this.$message({
+                            message: data.meta.msg,
+                            type: 'error',
+                            duration: 2000,
+                        })
+                    } else {
+                        this.$message({
+                            message: data.meta.msg,
+                            type: 'success',
+                            duration: 2000,
+                        })
+                        // 隐藏添加对话框
+                        this.dialogVisible = false;
+                        // 重新获取用户列表
+                        this.getUserList();
+                    }
+
+                }
+            })
+
+            // 添加成功后关闭页面
+        },
         getUserList: function () {
             this.axios.get('users', { params: this.queryInfo }).then(res => {
                 let { data } = res;
                 if (data.meta.status !== 200) {
-                    this.$message({
+                    return this.$message({
                         message: data.meta.msg,
                         type: 'error',
                         duration: 2000,
@@ -107,6 +212,32 @@ export default {
             // console.log(`当前页: ${val}`);
             this.queryInfo.pagenum = val;
             this.getUserList();
+        },
+        // 监听switch 状态
+        userStateChanged: function (val) {
+            // console.log(val);
+            this.axios.put(`users/${val.id}/state/${val.mg_state}`).then(res => {
+                let { data } = res;
+                console.log(data);
+                if (data.meta.status !== 200) {
+                    // 没有更改成功，恢复原来的状态
+                    val.mg_state = !val.mg_state;
+                    return this.$message({
+                        message: data.meta.msg,
+                        type: 'error',
+                        duration: 2000,
+                    })
+                } else {
+                    this.$message({
+                        message: data.meta.msg,
+                        type: 'success',
+                        duration: 2000,
+                    })
+                }
+            })
+        },
+        addDialogClosed() {
+            this.$refs.addFormRef.resetFields();
         }
     },
     components: {

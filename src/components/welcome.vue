@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <h3>Welcome</h3>
+    <div class="welcome-here">
+        <h3>Welcome to here :-)</h3>
     </div>
 </template>
 
@@ -24,4 +24,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
+h3 {
+    text-align: start;
+
+}
 </style>

@@ -76,7 +76,7 @@ export default {
             window.sessionStorage.clear();
             this.$router.push('/login');
         },
-        getMenuList: async function () {
+        getMenuList: function () {
             this.axios.get('menus').then(res => {
                 // console.log(res);
                 let { data } = res;
