@@ -40,3 +40,24 @@ body,
   justify-content: flex-start;
   align-items: center;
 }
+/* 改变级联的高度 */
+.el-cascader-panel {
+  height: 200px;
+}
+
+.el-radio__inner {
+  border-radius: 0;
+  border: 0;
+  width: 170px;
+  height: 34px;
+  background-color: transparent;
+  cursor: pointer;
+  box-sizing: border-box;
+  position: absolute;
+  top: -18px;
+  left: -19px;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  background: transparent;
+}

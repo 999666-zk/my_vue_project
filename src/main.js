@@ -3,6 +3,11 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 
+// 导入插件zktable
+import ZkTable from "vue-table-with-tree-grid";
+
+Vue.component(ZkTable.name, ZkTable);
+
 // 导入element-ui
 // import ElementUI from "element-ui";
 // import "element-ui/lib/theme-chalk/index.css";
@@ -36,6 +41,7 @@ import {
   Tree,
   Select,
   Option,
+  Cascader,
 } from "element-ui";
 Vue.use(Button);
 Vue.use(Form);
@@ -63,6 +69,7 @@ Vue.use(Tag);
 Vue.use(Tree);
 Vue.use(Select);
 Vue.use(Option);
+Vue.use(Cascader);
 
 Vue.prototype.$confirm = MessageBox.confirm;
 Vue.prototype.$message = Message;

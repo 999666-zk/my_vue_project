@@ -92,7 +92,6 @@
         </el-dialog>
 
         <!-- 修改用户的对话框 -->
-
         <el-dialog title="修改用户" :visible.sync="editVisible" width="50%" @close="editClose">
             <el-form :model="editFormList" :rules="editFormrules" ref="editFormRef" label-width="70px">
                 <el-form-item label="用户名" prop="username">
@@ -231,7 +230,7 @@ export default {
                 if (valid) {
                     // 发起请求
                     const { data } = await this.axios.post('users', this.addForm);
-                    console.log(data);
+                    // console.log(data);
                     if (data.meta.status !== 201) {
                         return this.$message({
                             message: data.meta.msg,
