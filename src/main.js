@@ -32,6 +32,8 @@ import {
   Pagination,
   Dialog,
   MessageBox,
+  Tag,
+  Tree,
 } from "element-ui";
 Vue.use(Button);
 Vue.use(Form);
@@ -55,6 +57,8 @@ Vue.use(Switch);
 Vue.use(Tooltip);
 Vue.use(Pagination);
 Vue.use(Dialog);
+Vue.use(Tag);
+Vue.use(Tree);
 Vue.prototype.$confirm = MessageBox.confirm;
 Vue.prototype.$message = Message;
 // 导入全局样式表

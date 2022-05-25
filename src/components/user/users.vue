@@ -330,6 +330,7 @@ export default {
                 this.editFormList = data.data;
             }
         },
+        // 删除用户
         deleteUsers: function (id) {
             this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
                 confirmButtonText: '确定',
