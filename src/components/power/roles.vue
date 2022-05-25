@@ -97,7 +97,7 @@
             <!-- 内容主题区域 -->
             <el-form :model="editFormRoles" :rules="editRolesFormrules" ref="editFormRolesRef" label-width="100px">
                 <el-form-item label="角色名称" prop="roleName">
-                    <el-input v-model="editFormRoles.roleName" disabled></el-input>
+                    <el-input v-model="editFormRoles.roleName"></el-input>
                 </el-form-item>
                 <el-form-item label="角色描述" prop="roleDesc">
                     <el-input v-model="editFormRoles.roleDesc"></el-input>

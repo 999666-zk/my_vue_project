@@ -53,7 +53,8 @@
                         <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteUsers(row.id)">
                         </el-button>
                         <el-tooltip effect="dark" content="分配角色" placement="top">
-                            <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+                            <el-button type="warning" icon="el-icon-setting" size="mini" @click="setRoles(row)">
+                            </el-button>
                         </el-tooltip>
                     </template>
                 </el-table-column>
@@ -107,6 +108,24 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
                 <el-button type="primary" @click="editUser('editFormRef')">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 分配角色对话框 -->
+        <el-dialog title="分配角色" :visible.sync="setRolesdialogVisible" @close="setRolesClosed">
+            <div>
+                <p>当前的用户:{{ userInfoData.username }}</p>
+                <p>当前的角色:{{ userInfoData.role_name }}</p>
+                <p>分配新的角色:
+                    <el-select v-model="selectedRoleId" placeholder="请选择">
+                        <el-option v-for="item in rolesList" :key="item.id" :label="item.roleName" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </p>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="setRolesdialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveRolesInfo">确 定</el-button>
             </span>
         </el-dialog>
     </div>
@@ -194,6 +213,15 @@ export default {
             },
             // 获取要修改的数据
             editFormList: {},
+            // 分配角色对话框
+            setRolesdialogVisible: false,
+            // 记录分配的角色的信息
+            userInfoData: {},
+            // 记录 所有的角色的数据
+            rolesList: [],
+
+            // 已经选中的角色的id值
+            selectedRoleId: '',
         };
     },
     methods: {
@@ -358,6 +386,58 @@ export default {
                     message: '已取消删除'
                 });
             });
+        },
+        //展示分配角色的对话框
+        setRoles: async function (userInfo) {
+            this.userInfoData = userInfo
+
+            // 在展示前获取到所有的角色列表
+            const { data } = await this.axios.get('roles');
+            if (data.meta.status !== 200) {
+                return this.$message({
+                    message: data.meta.msg,
+                    type: 'error',
+                    duration: 2000,
+                })
+            } else {
+                this.$message({
+                    message: data.meta.msg,
+                    type: 'success',
+                    duration: 2000,
+                })
+                this.rolesList = data.data;
+            }
+
+            this.setRolesdialogVisible = true;
+        },
+        // 点击确定分配角色
+        saveRolesInfo: async function () {
+            if (!this.selectedRoleId) {
+                return this.$message.error('请选择要分配的角色！')
+            }
+            const { data } = await this.axios.put(`users/${this.userInfoData.id}/role`, { rid: this.selectedRoleId })
+            if (data.meta.status !== 200) {
+                return this.$message({
+                    message: data.meta.msg,
+                    type: 'error',
+                    duration: 2000,
+                })
+            } else {
+                this.$message({
+                    message: data.meta.msg,
+                    type: 'success',
+                    duration: 2000,
+                })
+                // 隐藏添加对话框
+                this.setRolesdialogVisible = false;
+                // 重新获取用户列表
+                this.getUserList();
+            }
+        },
+        // 关闭对话框重置 分配角色框内的值
+        setRolesClosed: function () {
+            this.selectedRoleId = '';
+            this.userInfoData = {};
         }
     },
     components: {
