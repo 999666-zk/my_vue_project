@@ -34,7 +34,6 @@ export default {
     },
     data() {
         return {
-
             // 所有的权限列表
             rightsList: [],
         };
