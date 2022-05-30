@@ -61,3 +61,18 @@ body,
 .el-radio__input.is-checked .el-radio__inner {
   background: transparent;
 }
+.el-steps {
+  margin: 15px 0;
+}
+.el-step__title {
+  font-size: 13px;
+}
+
+.el-tabs__content {
+  overflow: hidden;
+  position: relative;
+  text-align: left !important;
+}
+.ql-editor {
+  min-height: 300px;
+}
