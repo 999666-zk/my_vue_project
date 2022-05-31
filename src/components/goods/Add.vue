@@ -398,7 +398,7 @@ export default {
             };
             this.addForm.attrs.push(newInfo);
           });
-
+          //再进行赋值操作
           form.attrs = this.addForm.attrs;
           console.log(form);
           //   商品的名称必须是唯一的

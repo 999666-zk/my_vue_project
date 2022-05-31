@@ -417,7 +417,7 @@ export default {
           type: "success",
           duration: 2000,
         });
-        // console.log(data.data);
+        console.log(data.data);
         this.editruleForm = data.data;
       }
     },
